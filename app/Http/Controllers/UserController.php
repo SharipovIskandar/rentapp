@@ -38,4 +38,73 @@ class UserController extends Controller
         return view('ads.profile', compact('user', 'ads'));
     }
 
+    public function index()
+    {
+        return User::all();
+    }
+
+    public function show($id)
+    {
+        return User::findOrFail($id);
+    }
+
+    public function store(Request $request)
+    {
+        $user = User::create($request->all());
+        return response()->json($user, 201);
+    }
+
+    public function update(Request $request, $id)
+    {
+        $user = User::findOrFail($id);
+        $user->update($request->all());
+        return response()->json($user, 200);
+    }
+
+    public function destroy($id)
+    {
+        User::destroy($id);
+        return response()->json(null, 204);
+    }
+
+    public function getByGender($gender)
+    {
+        return User::where('gender', $gender)->get();
+    }
+
+    // Get users by position
+    public function getByPosition($position)
+    {
+        return User::where('position', $position)->get();
+    }
+
+    public function getByBranch($branchId)
+    {
+        return User::where('branch_id', $branchId)->get();
+    }
+
+    public function getUserAds($id)
+    {
+        $user = User::findOrFail($id);
+        return $user->ads;  // Assuming a relation 'ads' exists in the User model
+    }
+
+    public function getUserBookmarks($id)
+    {
+        $user = User::findOrFail($id);
+        return $user->bookmarks;  // Assuming a relation 'bookmarks' exists in the User model
+    }
+
+    public function getUserActiveAds($id)
+    {
+        $user = User::findOrFail($id);
+        return $user->ads()->where('status', 'active')->get();
+    }
+
+    public function getUserInactiveAds($id)
+    {
+        $user = User::findOrFail($id);
+        return $user->ads()->where('status', 'inactive')->get();
+    }
+
 }

@@ -22,14 +22,14 @@ class AdController extends Controller
     public function index()
     {
 
-            $branches=Branch::all();
-            $userId = auth()->id();
-            $ads = Ad::query()->withCount([
-               'bookmarkedByUsers as bookmarked' => function ($query) use ($userId) {
+        $branches = Branch::all();
+        $userId = auth()->id();
+        $ads = Ad::query()->withCount([
+            'bookmarkedByUsers as bookmarked' => function ($query) use ($userId) {
                 $query->where('user_id', $userId);
-               }
-            ])->get();
-            return view('ads.index' ,compact('branches','ads'));
+            }
+        ])->get();
+        return view('ads.index', compact('branches', 'ads'));
     }
 
     /**
@@ -40,9 +40,9 @@ class AdController extends Controller
 
         $action = route('ads.store');
         $branches = Branch::all();
-        $ads=Ad::all();
-        $ad=new Ad();
-        return view('ads.create', compact('action','ads','branches','ad'));
+        $ads = Ad::all();
+        $ad = new Ad();
+        return view('ads.create', compact('action', 'ads', 'branches', 'ad'));
 
     }
 
@@ -55,22 +55,22 @@ class AdController extends Controller
         $request->validate([
             'title' => 'required | min:5',
             'description' => 'required',
-            'image'=>'mimes:jpg,jpeg,png,gif,svg|max:2048',
-        ],[
-            'title'=>['required' => 'Titlini kiritish majburiy'],
+            'image' => 'mimes:jpg,jpeg,png,gif,svg|max:2048',
+        ], [
+            'title' => ['required' => 'Titlini kiritish majburiy'],
             'description' => ['required' => 'Izoh kiritish majburiy'],
         ]);
 
         $ad = Ad::query()->create([
             'title' => $request->input("title"),
             'description' => $request->input("description"),
-            'users_id'=> auth()->id(),
+            'users_id' => auth()->id(),
             'statuses_id' => Status::ACTIVE,
             'address' => $request->input("address"),
             'branches_id' => $request->input("branch_id"),
             'price' => $request->input("price"),
             'rooms' => $request->input("rooms"),
-             'gender'=>$request->input("gender")
+            'gender' => $request->input("gender")
 
         ]);
 
@@ -79,7 +79,7 @@ class AdController extends Controller
 
             Images::query()->create([
                 'ad_id' => $ad->id,
-                'name'  => $file,
+                'name' => $file,
             ]);
         }
 
@@ -93,7 +93,7 @@ class AdController extends Controller
     public function show(string $id): \Illuminate\Contracts\View\View|\Illuminate\Foundation\Application|\Illuminate\Contracts\View\Factory
     {
         $ad = Ad::with('branch')->find($id);
-        return view('components.single-ad', ['ad'=>$ad]);
+        return view('components.single-ad', ['ad' => $ad]);
     }
 
     /**
@@ -121,7 +121,6 @@ class AdController extends Controller
     }
 
 
-
     public function find(Request $request): \Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|\Illuminate\Foundation\Application
     {
         $searchPhrase = $request->input('search_phrase');
@@ -147,9 +146,34 @@ class AdController extends Controller
     }
 
 
-  public function contact()
-  {
-      return view("components.contact");
-  }
+    public function contact()
+    {
+        return view("components.contact");
+    }
+
+    public function getByBranch($branchId)
+    {
+        return Ad::where('branch_id', $branchId)->get();
+    }
+
+    public function getByPriceRange($min, $max)
+    {
+        return Ad::whereBetween('price', [$min, $max])->get();
+    }
+
+    public function getByGender($gender)
+    {
+        return Ad::where('gender', $gender)->get();
+    }
+
+    public function getActiveAds()
+    {
+        return Ad::where('status', 'active')->get();
+    }
+
+    public function getInactiveAds()
+    {
+        return Ad::where('status', 'inactive')->get();
+    }
 
 }
